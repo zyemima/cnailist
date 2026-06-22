@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pelanggan - Cnailist Admin</title>
+  <link rel="stylesheet" href="css/admin.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+<div class="admin-wrapper">
+
+  <aside class="sidebar" id="adminSidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">💅</div>
+      <div><div class="brand-text">Cnailist</div><div class="brand-sub">Admin Panel</div></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Menu Utama</div>
+      <a href="index.html" class="nav-item"><i class="fas fa-chart-pie nav-icon"></i><span class="nav-label">Dashboard</span></a>
+      <a href="products.html" class="nav-item"><i class="fas fa-box nav-icon"></i><span class="nav-label">Produk</span></a>
+      <a href="orders.html" class="nav-item"><i class="fas fa-shopping-bag nav-icon"></i><span class="nav-label">Pesanan</span><span class="nav-badge">3</span></a>
+      <a href="customers.html" class="nav-item active"><i class="fas fa-users nav-icon"></i><span class="nav-label">Pelanggan</span></a>`n      <a href="chat.html" class="nav-item"><i class="fas fa-comments nav-icon"></i><span class="nav-label">Chat</span></a>
+      <div class="nav-section-label">Pengaturan</div>
+      <a href="login.html" class="nav-item"><i class="fas fa-sign-out-alt nav-icon"></i><span class="nav-label">Keluar</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-profile">
+        <div class="admin-avatar">A</div>
+        <div><div class="admin-name">Admin</div><div class="admin-role">Super Admin</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content" id="mainContent">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <span class="page-title">Manajemen Pelanggan</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Cari pelanggan..." oninput="renderCustomers()" id="topSearch" />
+        </div>
+        <button class="topbar-icon-btn"><i class="fas fa-bell"></i><span class="topbar-notif-badge"></span></button>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-icon pink"><i class="fas fa-users" style="color:#e91e8c"></i></div>
+          <div class="stat-info"><h3>6</h3><p>Total Pelanggan</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-user-check" style="color:#4caf50"></i></div>
+          <div class="stat-info"><h3>5</h3><p>Pelanggan Aktif</p></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-shopping-cart" style="color:#2196f3"></i></div>
+          <div class="stat-info"><h3 id="avgOrder">-</h3><p>Rata-rata Pesanan</p></div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="search-box" style="max-width:280px">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Cari nama / email..." id="searchInput" oninput="renderCustomers()" />
+        </div>
+        <select class="form-control" style="width:auto" id="filterStatus" onchange="renderCustomers()">
+          <option value="">Semua Status</option>
+          <option>Aktif</option>
+          <option>Nonaktif</option>
+        </select>
+        <div style="margin-left:auto">
+          <button class="btn-outline-admin" onclick="exportCustomers()"><i class="fas fa-download"></i> Export</button>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Daftar Pelanggan <span id="custCount" style="font-size:0.8rem;color:#888;font-weight:500"></span></h3>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Pelanggan</th>
+                <th>Email</th>
+                <th>No. Telepon</th>
+                <th>Total Pesanan</th>
+                <th>Total Belanja</th>
+                <th>Bergabung</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="custTableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL PELANGGAN -->
+<div class="modal-overlay" id="custDetailModal">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <h3>Detail Pelanggan</h3>
+      <button class="modal-close" onclick="closeModal('custDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="custDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn-outline-admin" onclick="closeModal('custDetailModal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header"><h3>Konfirmasi</h3><button class="modal-close" onclick="closeModal('confirmModal')">&times;</button></div>
+    <div class="modal-body"><p id="confirmMsg" style="font-size:0.9rem;color:#555"></p></div>
+    <div class="modal-footer">
+      <button class="btn-outline-admin" onclick="closeModal('confirmModal')">Batal</button>
+      <button class="btn-sm btn-sm-danger" style="padding:9px 20px;font-size:0.85rem" id="confirmOkBtn">Ya</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="adminToast"></div>
+<script src="js/admin.js"></script>
+  <script src="js/notif.js"></script>
+<script>
+  let localCustomers = [...adminCustomers];
+  const PER_PAGE = 8;
+  let currentPage = 1;
+
+  function getFiltered() {
+    const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    return localCustomers.filter(c =>
+      (c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search)) &&
+      (!status || c.status === status)
+    );
+  }
+
+  function renderCustomers() {
+    const filtered = getFiltered();
+    document.getElementById('custCount').textContent = `(${filtered.length} pelanggan)`;
+
+    const start = (currentPage - 1) * PER_PAGE;
+    const page  = filtered.slice(start, start + PER_PAGE);
+
+    document.getElementById('custTableBody').innerHTML = page.map(c => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:50%;background:#fce4ec;display:flex;align-items:center;justify-content:center;font-weight:700;color:#e91e8c;font-size:0.9rem;flex-shrink:0">
+              ${c.name.charAt(0)}
+            </div>
+            <span style="font-weight:600">${c.name}</span>
+          </div>
+        </td>
+        <td style="font-size:0.83rem;color:#555">${c.email}</td>
+        <td style="font-size:0.83rem">${c.phone}</td>
+        <td style="text-align:center;font-weight:700">${c.orders}</td>
+        <td style="font-weight:700;color:#e91e8c">${formatRp(c.total)}</td>
+        <td style="font-size:0.82rem;color:#888">${formatDate(c.joined)}</td>
+        <td>${statusBadge(c.status)}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-sm-info" onclick="viewCustomer(${c.id})" title="Detail"><i class="fas fa-eye"></i></button>
+            <button class="btn-sm ${c.status==='Aktif'?'btn-sm-danger':'btn-sm-success'}" onclick="toggleStatus(${c.id})" title="${c.status==='Aktif'?'Nonaktifkan':'Aktifkan'}">
+              <i class="fas fa-${c.status==='Aktif'?'ban':'check'}"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('') || `<tr><td colspan="8" style="text-align:center;padding:40px;color:#aaa">Tidak ada pelanggan</td></tr>`;
+
+    renderPagination(filtered.length);
+  }
+
+  function renderPagination(total) {
+    const pages = Math.ceil(total / PER_PAGE);
+    const el = document.getElementById('pagination');
+    if (pages <= 1) { el.innerHTML = ''; return; }
+    let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+    for (let i = 1; i <= pages; i++) {
+      html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+    el.innerHTML = html;
+  }
+
+  function goPage(p) {
+    const pages = Math.ceil(getFiltered().length / PER_PAGE);
+    if (p < 1 || p > pages) return;
+    currentPage = p;
+    renderCustomers();
+  }
+
+  function viewCustomer(id) {
+    const c = localCustomers.find(x => x.id === id);
+    const custOrders = adminOrders.filter(o => o.customer === c.name);
+    document.getElementById('custDetailBody').innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #f0d0dc">
+        <div style="width:60px;height:60px;border-radius:50%;background:#fce4ec;display:flex;align-items:center;justify-content:center;font-weight:800;color:#e91e8c;font-size:1.4rem">
+          ${c.name.charAt(0)}
+        </div>
+        <div>
+          <h2 style="font-size:1.1rem;font-weight:700">${c.name}</h2>
+          <p style="font-size:0.82rem;color:#888">${c.email} · ${c.phone}</p>
+          <p style="font-size:0.78rem;color:#888;margin-top:2px">Bergabung: ${formatDate(c.joined)}</p>
+        </div>
+        <div style="margin-left:auto">${statusBadge(c.status)}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px">
+        <div style="background:#fdf0f5;border-radius:12px;padding:14px;text-align:center">
+          <p style="font-size:0.72rem;color:#888;margin-bottom:4px">Total Pesanan</p>
+          <p style="font-size:1.3rem;font-weight:800;color:#e91e8c">${c.orders}</p>
+        </div>
+        <div style="background:#fdf0f5;border-radius:12px;padding:14px;text-align:center">
+          <p style="font-size:0.72rem;color:#888;margin-bottom:4px">Total Belanja</p>
+          <p style="font-size:1rem;font-weight:800;color:#e91e8c">${formatRp(c.total)}</p>
+        </div>
+        <div style="background:#fdf0f5;border-radius:12px;padding:14px;text-align:center">
+          <p style="font-size:0.72rem;color:#888;margin-bottom:4px">Rata-rata</p>
+          <p style="font-size:1rem;font-weight:800;color:#e91e8c">${formatRp(Math.round(c.total/c.orders))}</p>
+        </div>
+      </div>
+      <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:12px">Riwayat Pesanan</h4>
+      ${custOrders.length > 0 ? custOrders.map(o => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5">
+          <div>
+            <p style="font-weight:600;font-size:0.85rem;color:#e91e8c">${o.id}</p>
+            <p style="font-size:0.78rem;color:#888">${o.product} · ${formatDate(o.date)}</p>
+          </div>
+          <div style="text-align:right">
+            <p style="font-weight:700;font-size:0.88rem">${formatRp(o.total)}</p>
+            ${statusBadge(o.status)}
+          </div>
+        </div>
+      `).join('') : '<p style="color:#aaa;font-size:0.85rem">Belum ada pesanan</p>'}
+    `;
+    openModal('custDetailModal');
+  }
+
+  function toggleStatus(id) {
+    const c = localCustomers.find(x => x.id === id);
+    const newStatus = c.status === 'Aktif' ? 'Nonaktif' : 'Aktif';
+    confirmDelete(`${newStatus === 'Nonaktif' ? 'Nonaktifkan' : 'Aktifkan'} akun ${c.name}?`, () => {
+      c.status = newStatus;
+      renderCustomers();
+      showToast(`Akun ${c.name} ${newStatus.toLowerCase()}.`, newStatus === 'Aktif' ? 'success' : 'error');
+    });
+  }
+
+  function exportCustomers() {
+    const rows = [['ID','Nama','Email','Telepon','Pesanan','Total','Bergabung','Status']];
+    localCustomers.forEach(c => rows.push([c.id, c.name, c.email, c.phone, c.orders, c.total, c.joined, c.status]));
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    a.download = 'pelanggan-cnailist.csv';
+    a.click();
+    showToast('Data berhasil diexport!', 'success');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const avg = Math.round(adminCustomers.reduce((s,c) => s+c.orders, 0) / adminCustomers.length);
+    document.getElementById('avgOrder').textContent = avg;
+    renderCustomers();
+  });
+</script>
+</body>
+</html>
