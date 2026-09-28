@@ -1,4 +1,4 @@
-# 💅 Cnailist — Toko Kuku Palsu Online
+# Cnailist — Toko Kuku Palsu Online
 
 > Full-stack e-commerce untuk penjualan kuku palsu dengan fitur custom order, live chat, dan dashboard admin.
 
